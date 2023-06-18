@@ -1,7 +1,7 @@
 {
   "name": "@miii/turbo-multiple-frame-targeting",
   "description": "Add support for multiple frame targeting in Turbo",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "Jacob Andersson",
     "url": "https://github.com/miii"
