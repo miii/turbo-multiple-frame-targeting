@@ -1,0 +1,16 @@
+name: CI
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: mcr.microsoft.com/playwright:v1.35.0-jammy
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+      - uses: actions/setup-node@v3
+        with:
+          cache: pnpm
+      - run: pnpm install
+      - run: npx playwright install-deps
+      - run: pnpm build
+      - run: pnpm test
