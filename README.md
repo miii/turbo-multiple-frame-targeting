@@ -2,7 +2,9 @@
 > Add support for multiple frame targeting in Turbo
 
 ## 💡&nbsp; Motivation
-See [hotwired/turbo#475](https://github.com/hotwired/turbo/issues/475)
+See [hotwired/turbo#475](https://github.com/hotwired/turbo/issues/475) and [hotwired/turbo#56](https://github.com/hotwired/turbo/issues/56).<br>
+This is an alternative solution to implementing Turbo streams in situations where refactoring otherwise may be required.
+
 
 ## 📦&nbsp; Setup
 ```sh
