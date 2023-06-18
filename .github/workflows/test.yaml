@@ -1,7 +1,7 @@
 name: CI
 on: push
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     container: mcr.microsoft.com/playwright:v1.35.0-jammy
     steps:
