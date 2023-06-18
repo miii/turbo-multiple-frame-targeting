@@ -41,7 +41,10 @@ const refreshFrames = (initiator: HTMLElement, response: any, submitter?: HTMLEl
     if (!frame)
       return
 
-    // https://github.com/hotwired/turbo/blob/4593d06ce58d17af5b17495ad8524eaa9bc2f5d2/src/core/frames/frame_controller.ts#L265C13-L274
+    /**
+     * Mock default behavior of Turbo
+     * @see https://github.com/hotwired/turbo/blob/main/src/core/frames/frame_controller.ts#L268-L269
+     */
     frame.delegate.proposeVisitIfNavigatedWithAction(frame, initiator, submitter)
     frame.delegate.loadResponse(response)
   })
