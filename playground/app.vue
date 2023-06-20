@@ -33,12 +33,14 @@ const valueForm = useState('v3', randomHash)
         <span data-testid="static-value" v-text="valueStatic" />
       </turbo-frame>
     </div>
+    
     <div class="container">
       <span>Dynamic:</span>
       <turbo-frame id="dynamic-frame">
         <span data-testid="dynamic-value" v-text="valueDynamic" />
       </turbo-frame>
     </div>
+
     <turbo-frame id="form-frame" class="container">
       <span>Form:</span>
       <span data-testid="form-value" v-text="valueForm" />
@@ -48,13 +50,25 @@ const valueForm = useState('v3', randomHash)
           :href="$route.path"
           data-turbo-frame="form-frame dynamic-frame"
           data-testid="link"
-        >Visit link</a>
+        >data-turbo-frame="form-frame dynamic-frame"</a>
+        <a
+          :href="$route.path"
+          data-turbo-frame="dynamic-frame _self"
+          data-testid="link-self"
+        >data-turbo-frame="dynamic-frame _self"</a>
         
         <form
           data-turbo-frame="form-frame dynamic-frame"
           data-testid="form"
         >
-          <button type="submit">Submit form</button>
+          <button type="submit">data-turbo-frame="form-frame dynamic-frame"</button>
+        </form>
+        
+        <form
+          data-turbo-frame="dynamic-frame _self"
+          data-testid="form-self"
+        >
+          <button type="submit">data-turbo-frame="dynamic-frame _self"</button>
         </form>
       </div>
     </turbo-frame>
@@ -84,5 +98,7 @@ span {
   grid-column: 1 / 3;
   white-space: nowrap;
   margin-top: 10px;
+  display: grid;
+  gap: 5px;
 }
 </style>

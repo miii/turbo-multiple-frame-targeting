@@ -28,13 +28,27 @@ const refreshFrames = (initiator: HTMLElement, response: any, submitter?: HTMLEl
   const targetFrame = initiator.dataset.turboFrame || ''
   
   // Find frames to refresh
+  let selfFrameTargetIndex = -1
   const frames = targetFrame
     .split(' ')
-    .filter(Boolean)
-    .map(id => document.querySelector<FrameElement>(`turbo-frame#${id}`))
+    .filter((value, index, array) => value && array.indexOf(value) === index) // Remove duplicates
+    .map((id, index) => {
+      if (id === '_self') {
+        // Support data-turbo-frame="_self"
+        selfFrameTargetIndex = index
+        return initiator.closest<FrameElement>('turbo-frame')
+      } else {
+        // Support data-turbo-frame="frame_id"
+        return document.querySelector<FrameElement>(`turbo-frame#${id}`)
+      }
+    })
 
-  // Turbo will refresh the first frame natively
-  frames.shift()
+  if (targetFrame.includes('_self') && selfFrameTargetIndex >= 0)
+    // If _self is provided, Turbo will refresh it natively
+    frames.splice(selfFrameTargetIndex, 1)
+  else
+    // Turbo will refresh the first frame natively
+    frames.shift()
 
   // Refresh other frames
   frames.forEach(frame => {
