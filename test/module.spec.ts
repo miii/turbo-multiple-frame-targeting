@@ -2,150 +2,126 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, test } from 'vitest'
 import { createPage, setup } from '@nuxt/test-utils'
 
-describe('Test suite', async () => {
+describe('Module', async () => {
   await setup({
     rootDir: fileURLToPath(new URL('../playground', import.meta.url)),
     browser: true,
   })
 
-  describe('Native Turbo', async () => {
-    describe('Form submission', async () => {
-      test('#form should only refresh _self', testTemplate({
-        target: 'form',
-        updates: { static: false, dynamic: false, form: true },
-      }))
+  describe('Without parent <turbo-frame>', () => {
+    test('<a data-turbo-frame="frame-1"> should update #frame-1', testTemplate({
+      target: 'a-native',
+      updates: { frame1: true },
+    }))
 
-      test('#form-self should only refresh _self', testTemplate({
-        target: 'form-self',
-        updates: { static: false, dynamic: false, form: true },
-      }))
-    })
+    test('<a data-turbo-frame="frame-1 frame-2"> should update #frame-1 + #frame-2', testTemplate({
+      target: 'a-multiple',
+      updates: { frame1: true, frame2: true },
+    }))
+          
+    test('<form data-turbo-frame="frame-1"> should update #frame-1', testTemplate({
+      target: 'form-native',
+      updates: { frame1: true },
+    }))
 
-    describe('Link navigation', async () => {
-      test('#link should only refresh _self', testTemplate({
-        target: 'link',
-        updates: { static: false, dynamic: false, form: true },
-      }))
-
-      test('#link-self should only refresh _self', testTemplate({
-        target: 'link-self',
-        updates: { static: false, dynamic: false, form: true },
-      }))
-    })
+    test('<form data-turbo-frame="frame-1 frame-2"> should update #frame-1 + #frame-2', testTemplate({
+      target: 'form-multiple',
+      updates: { frame1: true, frame2: true },
+    }))
   })
 
-  describe('With module enabled', async () => {
-    describe('Form submission', async () => {
-      test('#form should refresh _self + dynamic', testTemplate({
-        target: 'form',
-        updates: { static: false, dynamic: true, form: true },
-        setup: page => page.evaluate('window.$module.enable()'),
-      }))
+  describe('Placed inside <turbo-frame>', async () => {
+    test('<a> should update #parent', testTemplate({
+      target: 'a-scoped-none',
+      updates: { parent: true },
+    }))
 
-      test('#form-self should refresh _self + dynamic', testTemplate({
-        target: 'form-self',
-        updates: { static: false, dynamic: true, form: true },
-        setup: page => page.evaluate('window.$module.enable()'),
-      }))
-    })
+    test('<a data-turbo-frame="_self"> should update #parent', testTemplate({
+      target: 'a-scoped-self',
+      updates: { parent: true },
+    }))
 
-    describe('Link navigation', async () => {
-      test('#link should refresh _self + dynamic', testTemplate({
-        target: 'link',
-        updates: { static: false, dynamic: true, form: true },
-        setup: page => page.evaluate('window.$module.enable()'),
-      }))
+    test('<a data-turbo-frame="_self frame-2"> should update #parent + #frame-2', testTemplate({
+      target: 'a-multiple',
+      updates: { parent: true, frame2: true },
+    }))
+    
+    test('<form> should update #parent', testTemplate({
+      target: 'form-scoped-none',
+      updates: { parent: true },
+    }))
 
-      test('#link-self should refresh _self + dynamic', testTemplate({
-        target: 'link-self',
-        updates: { static: false, dynamic: true, form: true },
-        setup: page => page.evaluate('window.$module.enable()'),
-      }))
-    })
-  })
+    test('<form data-turbo-frame="_self"> should update #parent', testTemplate({
+      target: 'form-scoped-self',
+      updates: { parent: true },
+    }))
 
-  describe('With module enabled then disabled', async () => {
-    describe('Form submission', async () => {
-      test('#form should only refresh _self', testTemplate({
-        target: 'form',
-        updates: { static: false, dynamic: false, form: true },
-        setup: async (page) => {
-          await page.evaluate('window.$module.enable()')
-          await page.evaluate('window.$module.disable()')
-        },
-      }))
-
-      test('#form-self should only refresh _self', testTemplate({
-        target: 'form-self',
-        updates: { static: false, dynamic: false, form: true },
-        setup: async (page) => {
-          await page.evaluate('window.$module.enable()')
-          await page.evaluate('window.$module.disable()')
-        },
-      }))
-    })
-
-    describe('Link navigation', async () => {
-      test('#link should only refresh _self', testTemplate({
-        target: 'link',
-        updates: { static: false, dynamic: false, form: true },
-        setup: async (page) => {
-          await page.evaluate('window.$module.enable()')
-          await page.evaluate('window.$module.disable()')
-        },
-      }))
-
-      test('#link-self should only refresh _self', testTemplate({
-        target: 'link-self',
-        updates: { static: false, dynamic: false, form: true },
-        setup: async (page) => {
-          await page.evaluate('window.$module.enable()')
-          await page.evaluate('window.$module.disable()')
-        },
-      }))
-    })
+    test('<form data-turbo-frame="_self"> should update #parent', testTemplate({
+      target: 'form-scoped-multiple',
+      updates: { parent: true, frame2: true },
+    }))
   })
 })
 
 type Page = Awaited<ReturnType<typeof createPage>>
 const getSnapshot = (page: Page) => Promise.all([
-  page.getByTestId('static-value').textContent(),
-  page.getByTestId('dynamic-value').textContent(),
-  page.getByTestId('form-value').textContent(),
+  page.getByTestId('frame-static').textContent(),
+  page.getByTestId('frame-1').textContent(),
+  page.getByTestId('frame-2').textContent(),
+  page.getByTestId('frame-parent').textContent(),
 ])
 
-type Target<T extends string> = T | `${T}-${string}`
+type AnchorTestId<T extends string> = `a-${T}`
+type FormTestId<T extends string> = `form-${T}`
+type ButtonVariants = 'native' | 'multiple' |
+  'scoped-none' | 'scoped-self' | 'scoped-multiple'
+type Buttons = AnchorTestId<ButtonVariants> | FormTestId<ButtonVariants>
+
+type Updates = {
+  frame1?: boolean
+  frame2?: boolean
+  parent?: boolean
+}
+
 const testTemplate = (opt: {
+  /** Run initial code */
   setup?: (checkbox: Page) => unknown,
-  target: Target<'form' | 'link'>,
-  updates: {
-    static: boolean
-    dynamic: boolean
-    form: boolean
-  },
+  /** Button target */
+  target: Buttons,
+  /** Expected DOM updates */
+  updates: Updates,
 }) => async () => {
   const page = await createPage('/')
-  const [staticBefore, dynamicBefore, formBefore] = await getSnapshot(page)
+  const [staticBefore, frame1Before, frame2Before, parentBefore] = await getSnapshot(page)
+
+  const targetEl = page.getByTestId(opt.target)
   const turboFormRequest = page.waitForResponse(page.url())
 
+  // Run optional setup code
   opt.setup?.(page)
-  await new Promise(resolve => setTimeout(resolve, 50))
 
-  if (opt.target.startsWith('link'))
-    await page.getByTestId(opt.target).click()
+  if (opt.target.startsWith('a')) {
+    await targetEl.click()
+  }
   else
-    await page.getByTestId(opt.target).evaluate((form: HTMLFormElement) => form.requestSubmit())
+    await targetEl.evaluate((form: HTMLFormElement) => form.requestSubmit())
 
+  // Wait for turbo-frame to be updated
   await turboFormRequest
   await new Promise(resolve => setTimeout(resolve, 50))
-  const [staticAfter, dynamicAfter, formAfter] = await getSnapshot(page)
 
-  if (opt.updates.static) expect(staticBefore).not.toEqual(staticAfter)
-  else expect(staticBefore).toEqual(staticAfter)
+  const [staticAfter, frame1After, frame2After, parentAfter] = await getSnapshot(page)
 
-  if (opt.updates.dynamic) expect(dynamicBefore).not.toEqual(dynamicAfter)
-  else expect(dynamicBefore).toEqual(dynamicAfter)
+  // Assert static frame
+  expect(staticBefore, 'static frame should not be refreshed').toEqual(staticAfter)
 
-  if (opt.updates.form) expect(formBefore).not.toEqual(formAfter)
-  else expect(formBefore).toEqual(formAfter)
+  // Assert dynamic frames
+  if (opt.updates.frame1) expect(frame1Before, 'frame 1 should be updated').not.toEqual(frame1After)
+  else expect(frame1Before, 'frame 1 should not be updated').toEqual(frame2After)
+
+  if (opt.updates.frame2) expect(frame2Before, 'frame 2 should be updated').not.toEqual(frame2After)
+  else expect(frame2Before, 'frame 2 should not be updated').toEqual(frame2After)
+
+  if (opt.updates.parent) expect(parentBefore, 'parent frame should be updated').not.toEqual(parentAfter)
+  else expect(parentBefore, 'parent frame should not be updated').toEqual(parentAfter)
 }

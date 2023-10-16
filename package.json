@@ -29,15 +29,16 @@
     "dist"
   ],
   "scripts": {
-    "dev": "unbuild && pnpm --filter playground run dev",
+    "dev": "DEV=true pnpm --filter playground run dev",
     "build": "unbuild",
     "test": "vitest"
   },
   "devDependencies": {
     "@hotwired/turbo": "latest",
-    "@nuxt/test-utils": "^3.5.3",
-    "playwright": "^1.35.1",
-    "unbuild": "^1.2.1",
-    "vitest": "^0.32.2"
+    "@nuxt/test-utils": "^3.7.4",
+    "@playwright/test": "^1.39.0",
+    "playwright": "^1.39.0",
+    "unbuild": "^2.0.0",
+    "vitest": "^0.33.0"
   }
 }

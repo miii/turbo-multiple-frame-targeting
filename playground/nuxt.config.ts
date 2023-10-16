@@ -10,4 +10,11 @@ export default defineNuxtConfig({
       isCustomElement: (tag: string) => tag.startsWith('turbo'),
     },
   },
+  vite: process.env.DEV ? {
+    resolve: {
+      alias: {
+        '@miii/turbo-multiple-frame-targeting': '../src'
+      }
+    }
+  } : {},
 })

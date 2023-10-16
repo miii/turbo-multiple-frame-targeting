@@ -7,8 +7,11 @@ if (process.client)
   Turbo.start()
 
 // Enable module
-const enabled = ref(false)
+const enabled = ref(true)
 watch(enabled, value => value ? enable() : disable())
+
+if (process.client && enabled.value)
+  enable()
 
 if (process.client)
   // @ts-ignore
@@ -26,50 +29,55 @@ const valueForm = useState('v3', randomHash)
 <template>
   <div>
     <input type="checkbox" v-model="enabled" data-testid="checkbox" /> Enable module
+    <br>
+    <br>
 
     <div class="container">
-      <span>Static:</span>
-      <turbo-frame id="static-frame">
-        <span data-testid="static-value" v-text="valueStatic" />
+      <span>Static frame:</span>
+      <turbo-frame id="frame-static">
+        <span data-testid="frame-static" v-text="valueStatic" />
       </turbo-frame>
     </div>
+
+    <br>
     
     <div class="container">
-      <span>Dynamic:</span>
-      <turbo-frame id="dynamic-frame">
-        <span data-testid="dynamic-value" v-text="valueDynamic" />
+      <span>Frame 1:</span>
+      <turbo-frame id="frame-1">
+        <span data-testid="frame-1" v-text="valueDynamic" />
       </turbo-frame>
     </div>
 
-    <turbo-frame id="form-frame" class="container">
-      <span>Form:</span>
-      <span data-testid="form-value" v-text="valueForm" />
+    <div class="container">
+      <span>Frame 2:</span>
+      <turbo-frame id="frame-2" class="container">
+        <span data-testid="frame-2" v-text="valueForm" />
+      </turbo-frame>
+    </div>
 
-      <div class="form-content">
-        <a
-          :href="$route.path"
-          data-turbo-frame="form-frame dynamic-frame"
-          data-testid="link"
-        >data-turbo-frame="form-frame dynamic-frame"</a>
-        <a
-          :href="$route.path"
-          data-turbo-frame="dynamic-frame _self"
-          data-testid="link-self"
-        >data-turbo-frame="dynamic-frame _self"</a>
-        
-        <form
-          data-turbo-frame="form-frame dynamic-frame"
-          data-testid="form"
-        >
-          <button type="submit">data-turbo-frame="form-frame dynamic-frame"</button>
-        </form>
-        
-        <form
-          data-turbo-frame="dynamic-frame _self"
-          data-testid="form-self"
-        >
-          <button type="submit">data-turbo-frame="dynamic-frame _self"</button>
-        </form>
+    <div class="triggers">
+      <TAnchor target="frame-1" data-testid="a-single" />
+      <TAnchor target="frame-1 frame-2" data-testid="a-multiple" />
+      <TFormButton target="frame-1" data-testid="form-single" />
+      <TFormButton target="frame-1 frame-2" data-testid="form-multiple" />
+    </div>
+
+    <br>
+    <br>
+
+    <turbo-frame id="frame-parent">
+      <div class="container">
+        <span>Shared &lt;turbo-frame&gt;</span>
+        <span data-testid="frame-parent" v-text="valueForm" />
+      </div>
+
+      <div class="triggers">
+        <TAnchor data-testid="a-scoped-none" />
+        <TAnchor target="_self" data-testid="a-scoped-self" />
+        <TAnchor target="_self frame-2" data-testid="a-scoped-multiple" />
+        <TFormButton data-testid="form-scoped-none" />
+        <TFormButton target="_self" data-testid="form-scoped-self" />
+        <TFormButton target="_self frame-2" data-testid="form-scoped-multiple" />
       </div>
     </turbo-frame>
   </div>
@@ -86,7 +94,7 @@ span {
 
 .container {
   display: grid;
-  grid-template-columns: 100px 1fr;
+  grid-template-columns: 200px 1fr;
   width: min-content;
 }
 
@@ -94,11 +102,12 @@ span {
   padding-right: 1em;
 }
 
-.form-content {
+.triggers {
   grid-column: 1 / 3;
   white-space: nowrap;
   margin-top: 10px;
   display: grid;
   gap: 5px;
+  font-family: monospace;
 }
 </style>
